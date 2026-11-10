@@ -1,0 +1,1479 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8ee">
+  <title>Ếch Python — Hành trình tìm cầu vồng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20352c;
+      --muted: #718078;
+      --green: #27734f;
+      --green-dark: #1d5e40;
+      --line: #e6e9de;
+      --shadow: 0 16px 42px #29442d12;
+      font-family: "Nunito", "Trebuchet MS", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background: radial-gradient(ellipse at 10% 12%, #e8f1dc 0, transparent 30rem), #f7f8f2;
+    }
+    button { font: inherit; cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .48; }
+    .topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(16px, 5vw, 72px);
+      border-bottom: 1px solid #e8ecdf;
+      background: #ffffffc9;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 850; letter-spacing: -.04em; }
+    .brand-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 13px; background: #dff0dc; font-size: 23px; animation: frog-breathe 2.8s ease-in-out infinite; }
+    .brand-name { font-size: 18px; }
+    .top-meta { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .score-pill, .reset-button, .sound-toggle { padding: 9px 13px; border: 1px solid var(--line); border-radius: 99px; background: #fff; }
+    .score-pill { color: #96633b; }
+    .reset-button { color: #728078; font-size: 12px; }
+    .home-button { padding: 9px 13px; border: 1px solid var(--line); border-radius: 99px; background: #fff; color: #627268; font-size: 12px; font-weight: 800; }
+    .sound-toggle { color: #627268; font-size: 12px; font-weight: 800; }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 30px 24px 60px; }
+    .breadcrumb { margin: 0 0 15px; color: var(--muted); font-size: 13px; font-weight: 650; }
+    .breadcrumb span { padding: 0 7px; color: #a4aea5; }
+    .heading-row { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(26px, 4vw, 35px); letter-spacing: -.055em; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+    .level-pill { flex: 0 0 auto; padding: 10px 14px; border: 1px solid #e5e9d8; border-radius: 99px; background: #fff; color: #61704e; font-size: 12px; font-weight: 800; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 21px; align-items: start; }
+    .main-column { display: grid; min-width: 0; gap: 15px; }
+    .card { min-width: 0; border: 1px solid var(--line); border-radius: 19px; background: #fff; box-shadow: var(--shadow); }
+    .story { position: relative; overflow: hidden; padding: 19px 21px 20px; border-color: #e9e5d1; background: linear-gradient(115deg, #fffdf4, #fff 72%); }
+    .story::after { position: absolute; right: 12px; bottom: -27px; content: "🌈"; font-size: 80px; opacity: .13; transform: rotate(-12deg); }
+    .story-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #a27639; font-size: 11px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .story h2 { position: relative; z-index: 1; margin: 0 0 7px; font-size: 17px; letter-spacing: -.025em; }
+    .story p { position: relative; z-index: 1; max-width: 730px; margin: 0; color: #656c5c; font-size: 13px; line-height: 1.65; }
+
+    .theory { overflow: hidden; }
+    .theory-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 19px 10px; }
+    .section-label { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 850; }
+    .label-icon { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 9px; background: #fff8e9; }
+    .text-button { padding: 7px 9px; border: 0; background: transparent; color: var(--green); font-size: 11px; font-weight: 800; }
+    .theory-content { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; padding: 0 19px 17px; }
+    .theory-point { padding: 10px 11px; border: 1px solid #edf0e9; border-radius: 11px; background: #fafbf8; color: #657168; font-size: 12px; line-height: 1.5; }
+    .theory-point strong { display: block; margin-bottom: 3px; color: #385847; font-size: 12px; }
+    .syntax-panel { grid-column: 1 / -1; overflow-x: auto; padding: 11px 13px; border-radius: 11px; background: #1f3029; color: #dcebe0; }
+    .syntax-title { display: block; margin-bottom: 7px; color: #a9c5b2; font-size: 10px; font-weight: 850; }
+    .syntax-panel code { font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }
+    .hidden { display: none !important; }
+
+    .challenge { padding: 20px; }
+    .challenge-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .challenge h2 { margin: 0; font-size: 19px; letter-spacing: -.035em; }
+    .challenge-intro { margin: 6px 0 15px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .task-tag { flex: 0 0 auto; padding: 7px 10px; border-radius: 8px; background: #edf5e9; color: var(--green); font-size: 10px; font-weight: 850; }
+    .example { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; padding: 10px 12px; border: 1px dashed #dce5d8; border-radius: 10px; background: #fbfcf8; color: #637168; font-size: 11px; line-height: 1.5; }
+    .example span:last-child { min-width: 0; overflow-wrap: anywhere; }
+    .example b { color: var(--ink); }
+
+    .editor { overflow: auto; border: 1px solid #263d31; border-radius: 14px; background: #1f3029; }
+    .editor-bar { position: sticky; left: 0; display: flex; min-width: min-content; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-bottom: 1px solid #ffffff12; color: #aebdb4; font-size: 10px; }
+    .editor-lights { display: flex; gap: 5px; }
+    .editor-lights i { width: 7px; height: 7px; border-radius: 50%; background: #e58b71; }
+    .editor-lights i:nth-child(2) { background: #e9bd68; }
+    .editor-lights i:nth-child(3) { background: #7bc495; }
+    .code-area { min-width: 360px; padding: 13px 15px 15px; color: #e9f1e9; font: 12px/2 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .code-line { min-height: 24px; white-space: pre; }
+    .code-muted { color: #8ca094; }
+    .code-keyword { color: #89c9a0; }
+    .blank-input {
+      width: 165px;
+      height: 26px;
+      padding: 3px 7px;
+      border: 1px dashed #98cbaa;
+      border-radius: 6px;
+      outline: none;
+      background: #31483b;
+      color: #fff3bb;
+      font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+      vertical-align: middle;
+    }
+    .blank-input:focus { border-style: solid; box-shadow: 0 0 0 3px #8ac99b33; }
+    .blank-input::placeholder { color: #a8c7ae; }
+    .hint-box, .feedback { margin-top: 12px; padding: 11px 13px; border-radius: 10px; font-size: 12px; line-height: 1.55; }
+    .hint-box { background: #fff8e9; color: #786443; }
+    .hint-box strong { color: #694d2a; }
+    .feedback { display: none; }
+    .feedback.show { display: block; }
+    .feedback.success { background: #eaf6eb; color: #286341; }
+    .feedback.try-again { background: #fff4e8; color: #855c36; }
+    .actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 15px; }
+    .hint-button, .secondary-button { padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: #627268; font-size: 11px; font-weight: 800; }
+    .button-group { display: flex; gap: 8px; }
+    .primary-button, .next-button { padding: 10px 15px; border: 0; border-radius: 9px; background: var(--green); color: #fff; font-size: 12px; font-weight: 850; box-shadow: 0 5px 12px #27734f24; }
+    .primary-button:hover, .next-button:hover { background: var(--green-dark); }
+    .next-button { display: none; background: #e99556; }
+    .next-button.show { display: inline-block; }
+
+    .journey { position: sticky; top: 16px; overflow: hidden; }
+    .map-head { padding: 17px 18px 12px; }
+    .map-head h3 { margin: 0; font-size: 14px; }
+    .map-head p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .map { position: relative; height: 320px; margin: 0 12px; overflow: hidden; border-radius: 13px; background: linear-gradient(180deg, #e1f1e4, #cfe7d7); }
+    .map::before { position: absolute; inset: 0; content: ""; opacity: .38; background-image: radial-gradient(#91c79d 1px, transparent 1px); background-size: 17px 17px; }
+    .pond { position: absolute; right: -17px; bottom: -34px; width: 180px; height: 95px; border: 9px solid #c0e0cb; border-radius: 50%; background: #9dcdb5; }
+    .pond::after { position: absolute; top: 13px; left: 28px; width: 28px; height: 9px; content: ""; border: 2px solid #e6f4df88; border-radius: 50%; animation: water-ripple 2.7s ease-out infinite; }
+    .path { position: absolute; inset: 11px 8px; z-index: 1; pointer-events: none; }
+    .path-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .lily-pad { position: absolute; display: grid; width: 27px; height: 23px; place-items: center; border: 2px solid #78ad83; border-radius: 48% 52% 48% 52%; background: linear-gradient(145deg, #bce2ae, #8bc797); color: #326844; font-size: 9px; font-weight: 900; box-shadow: 0 2px 3px #315d3b20; transition: transform .25s ease, background .25s ease, box-shadow .25s ease; }
+    .lily-pad.current { transform: scale(1.16); box-shadow: 0 0 0 3px #ffffffbb, 0 2px 5px #315d3b30; }
+    .lily-pad.done { border-color: #3b9566; background: linear-gradient(145deg, #9bdc9b, #5fb47d); color: #174e34; }
+    .lily-pad.chapter-start { border-color: #4c9e6d; }
+    .frog { position: absolute; z-index: 3; top: 0; left: 0; font-size: 25px; filter: drop-shadow(0 3px 1px #325b3533); transition: left .5s ease, top .5s ease, transform .3s ease; }
+    .frog.hop { animation: frog-hop .56s cubic-bezier(.2,.8,.25,1); }
+    .map.celebrate { animation: map-celebrate .48s ease-out; }
+    .map-sparkle { position: absolute; z-index: 4; pointer-events: none; font-size: 15px; animation: sparkle-fly .85s ease-out forwards; }
+    .lily-pad.done { animation: pad-bloom .45s ease-out; }
+    .leaf { position: absolute; font-size: 18px; }
+    .leaf.one { top: 18px; right: 27px; }
+    .leaf.two { bottom: 13px; left: 20px; }
+    .progress-wrap { padding: 14px 17px 17px; }
+    .progress-line { display: flex; justify-content: space-between; margin-bottom: 7px; color: #65756a; font-size: 10px; font-weight: 800; }
+    .progress-track { height: 7px; overflow: hidden; border-radius: 99px; background: #edf0e9; }
+    .progress-fill { width: 0; height: 100%; border-radius: inherit; background: #62a879; transition: width .4s ease; }
+    .chapter-list { display: grid; gap: 7px; margin-top: 14px; }
+    .chapter-button { display: flex; width: 100%; align-items: center; gap: 9px; padding: 8px 9px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #748077; text-align: left; font-size: 11px; font-weight: 700; }
+    .chapter-button.active { border-color: #dcebdd; background: #f2f8f0; color: var(--green); }
+    .chapter-button.locked { opacity: .5; }
+    .chapter-icon { display: grid; width: 26px; height: 26px; flex: 0 0 auto; place-items: center; border-radius: 8px; background: #f1f3ed; font-size: 14px; }
+    .chapter-button.active .chapter-icon { background: #e4f1e2; animation: frog-breathe 2.8s ease-in-out infinite; }
+    .chapter-progress { margin-left: auto; color: #89968c; font-size: 9px; }
+    .score-note { margin-top: 13px; padding: 10px; border-radius: 10px; background: #fff8e9; color: #786443; font-size: 10px; line-height: 1.5; }
+    .notice { margin-top: 10px; color: #a15b36; font-size: 10px; line-height: 1.45; }
+    .finish-card { display: none; margin-top: 12px; padding: 11px; border-radius: 11px; background: #eaf6eb; color: #286341; text-align: center; font-size: 11px; line-height: 1.55; }
+    .finish-card.show { display: block; }
+    .finish-card.show { animation: finish-pop .55s cubic-bezier(.2,.9,.3,1.2) both; }
+    .main-column .story, .main-column .challenge { animation: card-arrive .36s ease-out both; }
+    .main-column .challenge { animation-delay: .06s; }
+    .editor.shake { animation: gentle-shake .36s ease-in-out; border-color: #df9a72; }
+    .editor.solved { animation: solved-glow .6s ease-out; }
+    .feedback.success { animation: feedback-in .3s ease-out; }
+    .feedback.try-again { animation: feedback-in .25s ease-out; }
+
+    .welcome-page { min-height: 100vh; padding: 0 24px 48px; }
+    .welcome-nav { display: flex; max-width: 1120px; height: 75px; align-items: center; justify-content: space-between; margin: 0 auto; }
+    .welcome-content { display: grid; max-width: 1060px; grid-template-columns: minmax(0, 1fr) minmax(320px, .92fr); align-items: center; gap: clamp(26px, 5vw, 64px); margin: clamp(24px, 6vh, 58px) auto 0; }
+    .welcome-copy { padding: 12px 0; }
+    .welcome-badge { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid #e5e9d8; border-radius: 99px; background: #ffffffc9; color: #637650; font-size: 11px; font-weight: 850; }
+    .welcome-copy h1 { max-width: 520px; margin: 18px 0 12px; font-size: clamp(37px, 5vw, 58px); line-height: 1.08; letter-spacing: -.06em; }
+    .welcome-copy > p { max-width: 490px; margin: 0; color: #67756a; font-size: 15px; line-height: 1.75; }
+    .welcome-features { display: flex; flex-wrap: wrap; gap: 9px; margin: 21px 0 0; }
+    .welcome-features span { padding: 8px 11px; border: 1px solid #e7ebdf; border-radius: 10px; background: #ffffffb8; color: #627268; font-size: 11px; font-weight: 750; transition: transform .2s ease, box-shadow .2s ease; }
+    .welcome-features span:hover { transform: translateY(-3px); box-shadow: 0 7px 16px #29442d12; }
+    .welcome-art { position: relative; overflow: hidden; min-height: 340px; border: 1px solid #e1eadc; border-radius: 28px; background: linear-gradient(160deg, #eff7e9, #dcefe1 58%, #d2e8de); box-shadow: 0 24px 60px #29442d17; }
+    .welcome-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .welcome-art::before, .welcome-art::after { position: absolute; z-index: 1; width: 9px; height: 9px; content: ""; border-radius: 50%; background: #fff6b8; box-shadow: 0 0 14px 5px #fff3a777; pointer-events: none; }
+    .welcome-art::before { top: 23%; left: 18%; animation: firefly-drift 5s ease-in-out infinite; }
+    .welcome-art::after { top: 35%; right: 18%; width: 7px; height: 7px; animation: firefly-drift 6s ease-in-out -2s infinite reverse; }
+    .art-caption { position: absolute; z-index: 2; right: 15px; bottom: 13px; left: 15px; padding: 11px 14px; border: 1px solid #ffffffb0; border-radius: 13px; background: #ffffffd9; color: #506756; font-size: 11px; font-weight: 750; text-align: center; backdrop-filter: blur(8px); }
+    .welcome-copy, .welcome-art, .welcome-card { animation: rise-in .7s both; }
+    .welcome-art { animation-delay: .12s; }
+    .welcome-card { animation-delay: .22s; }
+    .welcome-card { max-width: 1060px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; margin: 34px auto 0; padding: 22px 24px; border: 1px solid var(--line); border-radius: 20px; background: #fff; box-shadow: var(--shadow); }
+    .welcome-card h2 { margin: 0 0 5px; font-size: 18px; letter-spacing: -.03em; }
+    .welcome-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .welcome-form { display: flex; align-items: end; gap: 9px; }
+    .name-field { display: grid; gap: 6px; min-width: 205px; color: #617168; font-size: 10px; font-weight: 850; }
+    .name-field input { width: 100%; height: 42px; padding: 0 12px; border: 1px solid #dfe6dc; border-radius: 10px; outline: none; background: #fbfcf9; color: var(--ink); font: inherit; font-size: 13px; }
+    .name-field input:focus { border-color: #75ae82; box-shadow: 0 0 0 3px #75ae8224; }
+    .start-button { height: 42px; padding: 0 17px; border: 0; border-radius: 10px; background: var(--green); color: #fff; font-size: 12px; font-weight: 900; box-shadow: 0 5px 12px #27734f24; white-space: nowrap; }
+    .start-button:hover { background: var(--green-dark); }
+    .start-button, .primary-button, .next-button, .hint-button, .secondary-button, .home-button, .sound-toggle, .reset-button { transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+    .start-button:hover, .primary-button:hover:not(:disabled), .next-button:hover, .hint-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .home-button:hover, .sound-toggle:hover, .reset-button:hover { transform: translateY(-2px); box-shadow: 0 6px 14px #29442d17; }
+    .welcome-progress { display: none; margin-top: 9px !important; color: #976b38 !important; font-weight: 800; }
+    .welcome-progress.show { display: block; }
+    .storage-notice { grid-column: 1 / -1; margin: 0; color: #a15b36; font-size: 11px; line-height: 1.5; }
+    .copyright-note { max-width: 1060px; margin: 18px auto 0; color: var(--muted); font-size: 11px; text-align: center; }
+    .game-copyright { margin: 0 auto; padding: 0 24px 24px; }
+
+    @media (max-width: 820px) {
+      main { padding: 24px 17px 45px; }
+      .layout { grid-template-columns: 1fr; }
+      .journey { position: static; grid-row: 1; }
+      .chapter-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .map { height: 320px; }
+      .welcome-content { grid-template-columns: minmax(0, 1fr) minmax(270px, .82fr); gap: 24px; }
+      .welcome-art { min-height: 290px; }
+      .welcome-card { grid-template-columns: 1fr; gap: 16px; }
+      .welcome-form { justify-content: flex-start; }
+    }
+    @media (max-width: 520px) {
+      .welcome-page { padding: 0 14px 32px; }
+      .welcome-nav { height: 65px; }
+      .welcome-content { grid-template-columns: 1fr; gap: 15px; margin-top: 16px; }
+      .welcome-copy { padding: 0; }
+      .welcome-copy h1 { margin-top: 13px; font-size: clamp(37px, 11vw, 49px); }
+      .welcome-copy > p { font-size: 13px; }
+      .welcome-features { margin-top: 14px; }
+      .welcome-art { min-height: 245px; border-radius: 21px; }
+      .welcome-card { gap: 13px; margin-top: 17px; padding: 17px 15px; }
+      .welcome-form { align-items: stretch; flex-direction: column; }
+      .name-field { min-width: 0; }
+      .start-button { width: 100%; }
+      .topbar { height: 62px; padding: 0 12px; }
+      .brand { gap: 8px; }
+      .brand-icon { width: 34px; height: 34px; font-size: 20px; }
+      .brand-name { font-size: 16px; }
+      .top-meta { gap: 6px; font-size: 11px; }
+      .score-pill { padding: 8px 9px; }
+      .reset-button { padding: 8px 9px; }
+      .home-button { padding: 8px 9px; font-size: 10px; }
+      .sound-toggle { padding: 8px 9px; font-size: 10px; }
+      main { padding: 20px 11px 36px; }
+      .heading-row { align-items: flex-start; flex-direction: column; gap: 11px; }
+      .challenge { padding: 15px 12px; }
+      .story { padding: 16px 14px; }
+      .theory-head { padding-right: 13px; padding-left: 13px; }
+      .theory-content { grid-template-columns: 1fr; padding: 0 13px 13px; }
+      .chapter-list { grid-template-columns: 1fr; }
+      .actions { align-items: flex-start; flex-direction: column; }
+      .button-group { width: 100%; justify-content: flex-end; }
+      .task-tag { font-size: 9px; }
+      .example { align-items: flex-start; }
+    }
+    @media (max-width: 350px) {
+      .topbar { height: auto; min-height: 62px; flex-wrap: wrap; gap: 7px; padding: 8px; }
+      .top-meta { width: 100%; flex-wrap: wrap; justify-content: flex-start; gap: 5px; font-size: 10px; }
+      #player-display { display: none; }
+      .score-pill, .reset-button, .home-button, .sound-toggle { padding: 6px 8px; }
+      .brand-name { font-size: 14px; }
+      .reset-button { font-size: 10px; }
+      .home-button { font-size: 9px; }
+      .sound-toggle { font-size: 9px; }
+      main { padding-right: 8px; padding-left: 8px; }
+      .challenge { padding-right: 10px; padding-left: 10px; }
+      .welcome-nav .level-pill { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @keyframes frog-breathe { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-2px) rotate(-4deg); } }
+    @keyframes frog-hop { 0%, 100% { transform: translateY(0) rotate(0); } 42% { transform: translateY(-16px) rotate(-12deg) scale(1.08); } 72% { transform: translateY(1px) rotate(5deg); } }
+    @keyframes water-ripple { 0% { opacity: .8; transform: scale(.7); } 100% { opacity: 0; transform: scale(2.5); } }
+    @keyframes firefly-drift { 0%, 100% { transform: translate(0, 0); opacity: .55; } 50% { transform: translate(17px, -13px); opacity: 1; } }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes card-arrive { from { opacity: .55; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes gentle-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+    @keyframes solved-glow { 0% { box-shadow: 0 0 0 0 #9ed5a477; } 55% { box-shadow: 0 0 0 5px #9ed5a433; } 100% { box-shadow: 0 0 0 0 transparent; } }
+    @keyframes feedback-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes map-celebrate { 50% { filter: saturate(1.2) brightness(1.04); } }
+    @keyframes sparkle-fly { 0% { opacity: 0; transform: translate(-50%, 8px) scale(.5) rotate(-20deg); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(-50% + var(--drift)), -34px) scale(1.2) rotate(20deg); } }
+    @keyframes pad-bloom { 0% { transform: scale(.85); } 65% { transform: scale(1.35); } 100% { transform: scale(1); } }
+    @keyframes finish-pop { from { opacity: 0; transform: scale(.92) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  </style>
+</head>
+<body>
+  <section class="welcome-page" id="welcome-page">
+    <nav class="welcome-nav" aria-label="Điều hướng">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">🐸</div><div class="brand-name">Ếch Python</div></div>
+      <span class="level-pill">Học Python qua trò chơi</span>
+    </nav>
+    <div class="welcome-content">
+      <div class="welcome-copy">
+        <span class="welcome-badge">🌱 HÀNH TRÌNH HỌC PYTHON CỦA BẠN</span>
+        <h1 id="welcome-title">Ếch Xanh và Cầu Vồng Mất Tích</h1>
+        <p>Giúp Ếch Xanh vượt qua những vùng đất Python, giải thử thách từng bước và tìm lại sắc màu đã mất. Mỗi chủ đề có câu chuyện, điểm thưởng và bài tập tăng dần độ khó.</p>
+        <div class="welcome-features">
+          <span>📚 Lý thuyết ngắn</span>
+          <span>🧩 35 thử thách</span>
+          <span>⭐ Lưu điểm &amp; tiến độ</span>
+        </div>
+      </div>
+      <div class="welcome-art">
+        <svg viewBox="0 0 640 410" role="img" aria-labelledby="journey-title journey-desc">
+          <title id="journey-title">Bản đồ hành trình của Ếch Xanh</title>
+          <desc id="journey-desc">Ếch Xanh đi qua khu rừng, cánh cổng, đấu trường, thung lũng và đầm sen để tìm cầu vồng.</desc>
+          <defs>
+            <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#eaf5e9"/>
+              <stop offset="1" stop-color="#d5ecdf"/>
+            </linearGradient>
+            <linearGradient id="hill" x1="0" x2="1">
+              <stop offset="0" stop-color="#a8d5a5"/>
+              <stop offset="1" stop-color="#78b991"/>
+            </linearGradient>
+          </defs>
+          <rect width="640" height="410" fill="url(#sky)"/>
+          <circle cx="521" cy="68" r="31" fill="#ffe59a"/>
+          <path d="M0 224 Q102 125 202 220 T402 210 T640 185 V410 H0Z" fill="#c6e4c4"/>
+          <path d="M0 275 Q122 180 250 280 T480 252 T640 247 V410 H0Z" fill="url(#hill)"/>
+          <path d="M38 321 C135 260 195 350 280 293 S423 224 501 285 S574 327 608 260" fill="none" stroke="#fff9db" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 2"/>
+          <path d="M38 321 C135 260 195 350 280 293 S423 224 501 285 S574 327 608 260" fill="none" stroke="#8bbd8c" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 11"/>
+          <g transform="translate(52 145)">
+            <path d="M0 58 37 0 74 58Z" fill="#5f9a69"/><path d="m18 58 28-43 28 43Z" fill="#78ae76"/>
+            <rect x="31" y="52" width="13" height="37" rx="5" fill="#8b684b"/>
+          </g>
+          <g transform="translate(192 204)">
+            <rect x="0" y="0" width="44" height="62" rx="20" fill="#eabf77"/>
+            <path d="M11 61V29a11 11 0 0 1 22 0v32" fill="#fff8e9"/>
+            <circle cx="22" cy="19" r="4" fill="#a77639"/>
+          </g>
+          <g transform="translate(320 180)">
+            <path d="M0 51 24 0 48 51Z" fill="#91b8bd"/><path d="m22 51 30-68 31 68Z" fill="#a6c8c0"/>
+            <path d="m35 18 17-35 16 35-12-5-7 9-7-9Z" fill="#fff"/>
+          </g>
+          <g transform="translate(478 238)">
+            <ellipse cx="46" cy="31" rx="61" ry="25" fill="#88c6a9"/>
+            <ellipse cx="46" cy="28" rx="35" ry="13" fill="#b9e6d3"/>
+            <path d="M45 27c-20-19 2-31 16-15 17-12 30 9 10 18" fill="#80b984"/>
+            <circle cx="56" cy="27" r="5" fill="#ee9db0"/>
+          </g>
+          <path d="M443 104a73 73 0 0 1 146 0" fill="none" stroke="#f08e78" stroke-width="10" stroke-linecap="round"/>
+          <path d="M454 104a62 62 0 0 1 124 0" fill="none" stroke="#f5c56b" stroke-width="10" stroke-linecap="round"/>
+          <path d="M465 104a51 51 0 0 1 102 0" fill="none" stroke="#84bd91" stroke-width="10" stroke-linecap="round"/>
+          <g transform="translate(74 266)" font-family="sans-serif" font-size="18" text-anchor="middle">
+            <circle r="18" fill="#fff" stroke="#86bd8b" stroke-width="3"/><text y="6">🌲</text>
+          </g>
+          <g transform="translate(212 307)" font-family="sans-serif" font-size="18" text-anchor="middle">
+            <circle r="18" fill="#fff" stroke="#e8bd77" stroke-width="3"/><text y="6">🚪</text>
+          </g>
+          <g transform="translate(291 326)" font-family="sans-serif" font-size="18" text-anchor="middle">
+            <circle r="18" fill="#fff" stroke="#eba78b" stroke-width="3"/><text y="6">🎮</text>
+          </g>
+          <g transform="translate(400 260)" font-family="sans-serif" font-size="18" text-anchor="middle">
+            <circle r="18" fill="#fff" stroke="#9bbdc0" stroke-width="3"/><text y="6">🔁</text>
+          </g>
+          <g transform="translate(535 293)" font-family="sans-serif" font-size="18" text-anchor="middle">
+            <circle r="18" fill="#fff" stroke="#82bd9d" stroke-width="3"/><text y="6">🪷</text>
+          </g>
+          <g transform="translate(106 301)">
+            <ellipse cx="0" cy="18" rx="22" ry="7" fill="#4a8d6a" opacity=".22"/>
+            <circle cx="0" cy="0" r="17" fill="#47a86c"/>
+            <circle cx="-7" cy="-12" r="7" fill="#73c77e"/><circle cx="7" cy="-12" r="7" fill="#73c77e"/>
+            <circle cx="-6" cy="-2" r="2.5" fill="#fff"/><circle cx="6" cy="-2" r="2.5" fill="#fff"/>
+            <circle cx="-6" cy="-2" r="1.2" fill="#20352c"/><circle cx="6" cy="-2" r="1.2" fill="#20352c"/>
+            <path d="M-5 5q5 5 10 0" fill="none" stroke="#205a3c" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <g fill="#fff">
+            <circle cx="113" cy="71" r="3"/><circle cx="273" cy="94" r="2.5"/><circle cx="402" cy="73" r="3"/>
+            <path d="M145 112v12m-6-6h12M392 121v10m-5-5h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </g>
+        </svg>
+        <div class="art-caption">Rừng Sương → Cổng Logic → Đấu Trường → Thung Lũng → Đầm Sen → Cầu Vồng 🌈</div>
+      </div>
+    </div>
+    <div class="welcome-card">
+      <div>
+        <h2 id="welcome-card-title">Bạn tên gì, nhà thám hiểm?</h2>
+        <p id="welcome-card-copy">Nhập họ tên để lưu hồ sơ và bắt đầu chuyến phiêu lưu. Điểm cùng tiến độ sẽ được ghi nhớ trên thiết bị này.</p>
+        <p class="welcome-progress" id="welcome-progress"></p>
+      </div>
+      <form class="welcome-form" id="welcome-form">
+        <label class="name-field" for="player-name">
+          HỌ VÀ TÊN
+          <input id="player-name" name="playerName" type="text" autocomplete="name" maxlength="60" placeholder="Ví dụ: Nguyễn Minh Anh" required>
+        </label>
+        <button class="start-button" id="start-button" type="submit">Bắt đầu hành trình →</button>
+      </form>
+      <p class="storage-notice hidden" id="welcome-notice" role="status"></p>
+    </div>
+    <footer class="copyright-note">Bản quyền tác giả: Lê Phát Hiện</footer>
+  </section>
+
+  <div id="game-shell" class="hidden">
+    <header class="topbar">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">🐸</div><div class="brand-name">Ếch Python</div></div>
+      <div class="top-meta">
+        <span id="player-display"></span>
+        <button class="home-button" id="home-button" type="button">Trang đầu</button>
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" title="Tắt âm thanh">🔊 Âm thanh</button>
+        <span class="score-pill">⭐ <span id="score">0</span>/1000 · <span id="grade">0.0</span>/10</span>
+        <button class="reset-button" id="reset-button" type="button">Chơi lại</button>
+      </div>
+    </header>
+
+    <main>
+    <p class="breadcrumb">Hành trình <span>›</span> <span id="breadcrumb-chapter">Rừng Sương</span> <span>›</span> <span id="breadcrumb-task">Thử thách 1</span></p>
+    <div class="heading-row">
+      <div>
+        <h1 id="page-title">Ếch Xanh và Cầu Vồng Mất Tích 🌈</h1>
+        <p class="subtitle" id="page-subtitle">Mỗi bài học là một chặng đường. Mỗi mảnh code giúp câu chuyện tiến thêm một bước.</p>
+      </div>
+      <div class="level-pill" id="level-pill">Chặng 1 / 15</div>
+    </div>
+
+    <div class="layout">
+      <section class="main-column" aria-label="Câu chuyện và thử thách">
+        <article class="card story" aria-live="polite">
+          <div class="story-label"><span>📖</span><span id="story-label">Câu chuyện bắt đầu</span></div>
+          <h2 id="story-title">Một buổi sáng không còn sắc màu</h2>
+          <p id="story-text"></p>
+        </article>
+
+        <article class="card theory" id="theory-card">
+          <div class="theory-head">
+            <div class="section-label"><span class="label-icon">💡</span><span id="theory-title">Nhắc nhanh trước khi chơi</span></div>
+            <button class="text-button" id="theory-toggle" type="button" aria-expanded="true">Thu gọn ↑</button>
+          </div>
+          <div class="theory-content" id="theory-content"></div>
+        </article>
+
+        <article class="card challenge">
+          <div class="challenge-top">
+            <div>
+              <h2 id="challenge-title"></h2>
+              <p class="challenge-intro" id="challenge-intro"></p>
+            </div>
+            <span class="task-tag" id="task-tag"></span>
+          </div>
+          <div class="example"><span aria-hidden="true">🧪</span><span id="example-text"></span></div>
+          <div class="editor" aria-label="Khung điền các mảnh code">
+            <div class="editor-bar"><div class="editor-lights" aria-hidden="true"><i></i><i></i><i></i></div><span>thu_thach.py</span><span>Python</span></div>
+            <div class="code-area" id="code-area"></div>
+          </div>
+          <div class="hint-box hidden" id="hint-box" role="status"></div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+          <div class="actions">
+            <button class="hint-button" id="hint-button" type="button">💡 Gợi ý <span id="hint-count"></span></button>
+            <div class="button-group">
+              <button class="secondary-button" id="back-button" type="button">← Bài trước</button>
+              <button class="primary-button" id="check-button" type="button">Kiểm tra ✓</button>
+              <button class="next-button" id="next-button" type="button">Qua bài →</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <aside class="card journey" aria-label="Bản đồ hành trình và điểm số">
+        <div class="map-head"><h3>Đường đến Cầu Vồng</h3><p>Ếch nhảy qua từng vùng đất Python</p></div>
+        <div class="map">
+          <div class="path" id="lily-path" aria-hidden="true"></div>
+          <span class="leaf one" aria-hidden="true">🌿</span><span class="leaf two" aria-hidden="true">🌼</span>
+          <div class="pond" aria-hidden="true"></div>
+          <div class="frog" id="frog" aria-label="Ếch Xanh">🐸</div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-line"><span>Tiến độ hành trình</span><span id="progress-label">0 / 15 bài</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <nav class="chapter-list" id="chapter-list" aria-label="Các chủ đề"></nav>
+          <div class="score-note"><strong>Thang điểm</strong><br>Tổng hành trình tối đa 1000 điểm. Điểm quy đổi thang 10 = tổng điểm ÷ 100.</div>
+          <div class="notice hidden" id="storage-notice" role="status"></div>
+          <div class="finish-card" id="finish-card">🏆 Em đã đưa sắc màu trở lại Cầu Vồng!<br><strong id="final-score"></strong></div>
+        </div>
+      </aside>
+    </div>
+    </main>
+    <footer class="copyright-note game-copyright">Bản quyền tác giả: Lê Phát Hiện</footer>
+  </div>
+
+  <script>
+    const chapters = [
+      {
+        id: "forest",
+        title: "Rừng Sương",
+        icon: "🌲",
+        theory: [
+          ["Hiển thị", "print() giúp đưa chữ hoặc kết quả ra màn hình."],
+          ["Biến", "Biến đặt tên cho dữ liệu cần ghi nhớ; phép tính có thể dùng các biến đó."],
+          ["Nhập số", "input() nhận chữ; dùng int() nếu cần tính toán với số nguyên."]
+        ],
+        syntax: 'print("Xin chào!")\nten = input("Tên bạn: ")\ntuoi = int(input("Tuổi: "))\nket_qua = tuoi + 1',
+        tasks: [
+          {
+            title: "Gửi lời chào cho rừng",
+            intro: "Điền lời chào để đánh thức những chiếc lá đang ngủ.",
+            storyTitle: "Sương mù biết nói",
+            story: "Vừa bước vào Rừng Sương, Ếch Xanh nghe tiếng lá thì thầm: “Chỉ lời chào thân thiện mới đánh thức được lối đi!” Một đom đóm nhỏ đang chờ em chọn câu thần chú.",
+            example: 'Hãy để Python in ra câu <b>Chào mừng đến Rừng Sương!</b>.',
+            lines: ['# Gửi lời chào đầu tiên', 'print({0})'],
+            answers: ['"Chào mừng đến Rừng Sương!"'],
+            hints: ["Python có một hàm dùng để hiển thị nội dung lên màn hình.", "Điền lời chào thành một chuỗi đặt trong dấu nháy."],
+            slots: 1
+          },
+          {
+            title: "Cộng hạt sương",
+            intro: "Hai chú sóc nhặt được hạt sương. Hoàn thiện phép cộng để biết tổng số hạt.",
+            storyTitle: "Hai chú sóc và chiếc lá",
+            story: "Một chú sóc tìm thấy 3 hạt, chú còn lại có 4 hạt. Chúng đặt tất cả lên chiếc lá phép thuật. Lá chỉ phát sáng khi em cộng đúng tên hai biến.",
+            example: "Hai biến có giá trị <b>3</b> và <b>4</b>. Dùng tên biến để tính; kết quả của <b>tong_hat</b> cần là <b>7</b>.",
+            lines: ["so_cua_soc = 3", "so_trong_la = 4", "tong_hat = {0}", 'print("Tổng hạt:", tong_hat)'],
+            answers: ["so_cua_soc + so_trong_la"],
+            acceptedAnswers: [["so_cua_soc + so_trong_la", "so_trong_la + so_cua_soc"]],
+            hints: ["Muốn cộng dữ liệu trong biến, hãy dùng tên biến thay vì gõ lại kết quả.", "Dùng dấu + giữa so_cua_soc và so_trong_la."],
+            slots: 1
+          },
+          {
+            title: "Mật mã số phép thuật",
+            intro: "Ô trống là phần bên trong input(...). Hãy viết một lời nhắc bất kỳ bằng chuỗi có dấu nháy, ví dụ \"Hãy nhập số nguyên: \".",
+            storyTitle: "Cánh cửa không hiểu chữ số",
+            story: "Cánh cửa hang hỏi một số để mở lối đi. Nó nhận dữ liệu từ bàn phím dưới dạng chữ, nên cần một lời nhắc bên trong input() trước khi chuyển thành số nguyên.",
+            example: 'Điền <b>"Hãy nhập số nguyên: "</b> vào ô trống. Chạy chương trình, nhập <b>7</b> → kết quả là <b>49</b>. Nội dung lời nhắc có thể viết khác, miễn là có dấu nháy.',
+            lines: ["so = int(input({0}))", "print(so * so)"],
+            answers: ['"Nhập số phép thuật: "'],
+            answerValidator: "quoted-prompt",
+            hints: ["input() hiển thị lời nhắc rồi nhận nội dung người chơi nhập.", 'Điền chuỗi có dấu nháy, chẳng hạn "Hãy nhập số nguyên: ".'],
+            slots: 1
+          },
+          {
+            title: "Lời chào thân mật",
+            intro: "Dùng biến ten để hoàn thành câu chào trên màn hình.",
+            storyTitle: "Ếch Xanh gặp bạn mới",
+            story: "Một bạn nhỏ tên An đang đợi bên bờ suối. Hãy dùng biến ten trong câu chào để hai bạn làm quen.",
+            example: 'Với <b>ten = "An"</b>, chương trình in ra <b>Xin chào An</b>.',
+            lines: ['ten = "An"', 'print("Xin chào", {0})'],
+            answers: ["ten"],
+            hints: ["Tên đã được lưu trong biến ten.", "Điền ten vào bên trong lời gọi print()."],
+            slots: 1
+          },
+          {
+            title: "Nhân đôi phép thuật",
+            intro: "Hoàn thiện phép tính để gấp đôi số phép thuật.",
+            storyTitle: "Viên đá nhân đôi",
+            story: "Viên đá phép thuật có giá trị 6. Hãy dùng biến so và phép nhân để tạo ra kết quả gấp đôi.",
+            example: "<b>so = 6</b> → <b>ket_qua</b> cần bằng <b>12</b>.",
+            lines: ["so = 6", "ket_qua = {0}", 'print("Năng lượng:", ket_qua)'],
+            answers: ["so * 2"],
+            hints: ["Gấp đôi một số nghĩa là nhân số đó với 2.", "Dùng biến so và toán tử *."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "logic",
+        title: "Cổng Logic",
+        icon: "🚪",
+        theory: [
+          ["So sánh", "== kiểm tra bằng nhau; != khác nhau; > và < dùng để so sánh lớn, nhỏ."],
+          ["Rẽ nhánh", "if kiểm tra điều kiện; elif xét thêm trường hợp; else xử lý trường hợp còn lại."],
+          ["Kết hợp điều kiện", "and yêu cầu cả hai vế đúng; or chỉ cần một vế đúng."]
+        ],
+        syntax: 'if dieu_kien_1:\n    # thực hiện khi điều kiện 1 đúng\nelif dieu_kien_2:\n    # xét khi điều kiện 1 sai\nelse:\n    # các trường hợp còn lại',
+        tasks: [
+          {
+            title: "Mở cổng chẵn",
+            intro: "Cánh cổng chỉ mở nếu số phép thuật chia hết cho 2.",
+            storyTitle: "Người gác cổng ngủ gật",
+            story: "Người gác cổng cúi nhìn viên đá số 8: “Ta chỉ mở cổng với số chẵn!” Hãy viết điều kiện để viên đá tự nhận ra mình có chia hết cho 2 không.",
+            example: "<b>n = 8</b> là số chẵn. Hãy kiểm tra số dư khi chia cho 2; phép chia lấy dư trong Python dùng toán tử %.",
+            lines: ["n = 8", "if {0}:", '    print("Cổng mở!")', "else:", '    print("Thử số khác nhé!")'],
+            answers: ["n % 2 == 0"],
+            hints: ["Một số chẵn khi chia cho 2 có số dư bằng 0.", "Kết hợp phép chia lấy dư % với phép so sánh == 0."],
+            slots: 1
+          },
+          {
+            title: "Chỉ đường ba ngả",
+            intro: "Điền hai điều kiện để phân biệt số dương, số âm và số 0.",
+            storyTitle: "Ngã ba của ba chiếc cầu",
+            story: "Ếch Xanh gặp ba cây cầu: cầu Bình Minh dành cho số dương, cầu Hoàng Hôn dành cho số âm, còn số 0 đi thẳng. Hai biển chỉ đường đang trống.",
+            example: "Với <b>n = -3</b>, chương trình cần in <b>Cầu Hoàng Hôn</b>. Số dương đi vào nhánh đầu; số 0 đi vào else.",
+            lines: ["n = -3", "if {0}:", '    print("Cầu Bình Minh")', "elif {1}:", '    print("Cầu Hoàng Hôn")', "else:", '    print("Đi thẳng qua số 0")'],
+            answers: ["n > 0", "n < 0"],
+            hints: ["Nhánh đầu tiên kiểm tra số lớn hơn 0.", "Nhánh elif kiểm tra số nhỏ hơn 0; nếu không nhánh nào đúng thì số đó bằng 0."],
+            slots: 2
+          },
+          {
+            title: "Vé qua cầu Bạc",
+            intro: "Chỉ điền biểu thức ở bên phải dấu = — không nhập lại du_dieu_kien =. Cần kiểm tra tuổi >= 18 và đồng thời co_ve bằng and.",
+            storyTitle: "Cây cầu chỉ mở cho người đủ điều kiện",
+            story: "Bác Rùa giữ cây cầu Bạc và kiểm tra hai thứ: tuổi phải từ 18 trở lên, đồng thời phải có vé. Thiếu một trong hai thì cầu vẫn đóng.",
+            example: '<b>tuoi = 20</b>, <b>co_ve = True</b> → điền <b>tuoi >= 18 and co_ve</b> để du_dieu_kien nhận giá trị True.',
+            lines: ["tuoi = 20", "co_ve = True", "du_dieu_kien = {0}", 'print("Qua cầu:", du_dieu_kien)'],
+            answers: ["(tuoi >= 18) and co_ve"],
+            acceptedAnswers: [["(tuoi >= 18) and co_ve", "co_ve and (tuoi >= 18)", "tuoi >= 18 and co_ve", "co_ve and tuoi >= 18"]],
+            hints: ["Ô trống nằm sau dấu =; chỉ điền biểu thức, không viết lại tên biến du_dieu_kien.", "Điền tuoi >= 18 and co_ve. Toán tử and yêu cầu cả hai điều kiện đều đúng."],
+            slots: 1
+          },
+          {
+            title: "Cảnh báo số ngoài vùng",
+            intro: "Báo động nếu số nhỏ hơn 1 hoặc lớn hơn 10.",
+            storyTitle: "Người gác cổng cảnh giác",
+            story: "Cánh cổng chỉ chấp nhận số từ 1 đến 10. Nếu số nằm ngoài khoảng ấy, chuông báo động sẽ vang lên.",
+            example: "<b>n = 12</b> nằm ngoài vùng cho phép nên cần in <b>Báo động!</b>.",
+            lines: ["n = 12", "if {0}:", '    print("Báo động!")', "else:", '    print("An toàn")'],
+            answers: ["n < 1 or n > 10"],
+            acceptedAnswers: [["n < 1 or n > 10", "n > 10 or n < 1"]],
+            hints: ["Số ngoài vùng khi nhỏ hơn 1 hoặc lớn hơn 10.", "Dùng or nối hai phép so sánh."],
+            slots: 1
+          },
+          {
+            title: "Phân loại nhiệt độ",
+            intro: "Điền điều kiện nhận biết thời tiết nóng từ 30 độ trở lên.",
+            storyTitle: "Ngày nắng ở Vườn Mây",
+            story: "Trời từ 30 độ trở lên được báo là nóng; thấp hơn thì dễ chịu. Hãy giúp chiếc nhiệt kế chọn đúng thông báo.",
+            example: "<b>nhiet_do = 32</b> → chương trình cần in <b>Trời nóng</b>.",
+            lines: ["nhiet_do = 32", "if {0}:", '    print("Trời nóng")', "else:", '    print("Trời dễ chịu")'],
+            answers: ["nhiet_do >= 30"],
+            hints: ["Mốc bắt đầu nóng là 30 độ.", "Dùng phép so sánh lớn hơn hoặc bằng."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "arena",
+        title: "Đấu Trường Kéo Búa Bao",
+        icon: "🎮",
+        theory: [
+          ["Lựa chọn", "Gán số hoặc dữ liệu cho biến để lưu lựa chọn của người chơi và máy."],
+          ["Điều kiện nhiều nhánh", "if/elif/else giúp xử lý thắng, thua, hòa và các trường hợp còn lại."],
+          ["Logic trò chơi", "and kết hợp điều kiện trong một lượt; or gom nhiều cách thắng."]
+        ],
+        syntax: 'import random\nnguoi = int(input("Chọn 1, 2 hoặc 3: "))\nmay = random.randint(1, 3)\nif nguoi == may:\n    print("Hòa")',
+        tasks: [
+          {
+            title: "Chọn vũ khí",
+            intro: "Ô trống nằm bên trong int(...). Điền lời gọi input(), có thể có hoặc không có lời nhắc trong dấu nháy.",
+            storyTitle: "Lời thách đấu từ Quạ Đen",
+            story: "Quạ Đen chắn lối và thách Ếch Xanh chơi kéo-búa-bao. Muốn vào đấu trường, Ếch phải hỏi người chơi một lựa chọn trước; máy đã tự chọn ngẫu nhiên rồi.",
+            example: 'Dùng <b>input("Kéo (1), Búa (2), Bao (3): ")</b> để nhận lựa chọn.',
+            lines: ["import random", "nguoi = int({0})", "may = random.randint(1, 3)"],
+            answers: ['input("Kéo (1), Búa (2), Bao (3): ")'],
+            answerValidator: "input-call",
+            hints: ["Lựa chọn được nhập từ bàn phím; int() đổi lựa chọn thành số.", "Điền lời gọi input() cùng dòng nhắc kéo, búa, bao."],
+            slots: 1
+          },
+          {
+            title: "Nhận ra hòa",
+            intro: "Hai bên cùng chọn một món thì hòa. Hoàn thiện nhánh kiểm tra đó.",
+            storyTitle: "Cú bắt tay giữa hai đối thủ",
+            story: "Ếch chọn búa, Quạ cũng chọn búa. Hai đối thủ bật cười: “Hòa rồi!” Trọng tài đang chờ điều kiện so sánh hai lựa chọn.",
+            example: "<b>nguoi = 2</b>, <b>may = 2</b> thì in ra HÒA.",
+            lines: ["nguoi = 2", "may = 2", "if {0}:", '    print("HÒA!")', "else:", '    print("Chưa hòa")'],
+            answers: ["nguoi == may"],
+            acceptedAnswers: [["nguoi == may", "may == nguoi"]],
+            hints: ["Khi hai lựa chọn giống nhau thì chúng bằng nhau.", "So sánh nguoi và may bằng toán tử ==."],
+            slots: 1
+          },
+          {
+            title: "Chiêu thắng của Ếch",
+            intro: "Điền điều kiện cho một trong ba cách thắng của trò chơi.",
+            storyTitle: "Cú nhảy quyết định",
+            story: "Ván cuối bắt đầu! Kéo thắng bao, búa thắng kéo, bao thắng búa. Ếch chọn kéo còn Quạ chọn bao — hãy viết điều kiện để Ếch tung cú nhảy chiến thắng.",
+            example: "<b>nguoi = 1</b>, <b>may = 3</b> → điều kiện thắng phải đúng.",
+            lines: ["nguoi = 1", "may = 3", "if {0}:", '    print("Ếch thắng!")', "else:", '    print("Luyện thêm ván nữa!")'],
+            answers: ["nguoi == 1 and may == 3"],
+            acceptedAnswers: [["nguoi == 1 and may == 3", "(nguoi == 1 and may == 3)", "may == 3 and nguoi == 1", "(may == 3 and nguoi == 1)"]],
+            hints: ["Muốn kéo thắng bao, cả hai vế phải đúng cùng lúc.", "Người chơi chọn 1 và máy chọn 3; kết hợp bằng and."],
+            slots: 1
+          },
+          {
+            title: "Búa thắng kéo",
+            intro: "Kiểm tra đúng trường hợp búa của người chơi thắng kéo của máy.",
+            storyTitle: "Đòn búa dũng mãnh",
+            story: "Ếch chọn búa còn Quạ chọn kéo. Trọng tài cần kiểm tra chính xác cả hai lựa chọn trước khi công bố người thắng.",
+            example: "<b>nguoi = 2</b>, <b>may = 1</b> → chương trình cần in <b>Ếch thắng!</b>.",
+            lines: ["nguoi = 2", "may = 1", "if {0}:", '    print("Ếch thắng!")', "else:", '    print("Chưa thắng")'],
+            answers: ["nguoi == 2 and may == 1"],
+            acceptedAnswers: [["nguoi == 2 and may == 1", "may == 1 and nguoi == 2"]],
+            hints: ["Búa có mã 2; kéo có mã 1.", "Dùng and để cả lựa chọn của người chơi và máy đều khớp."],
+            slots: 1
+          },
+          {
+            title: "Kiểm tra lựa chọn hợp lệ",
+            intro: "Báo lỗi nếu người chơi chọn nhỏ hơn 1 hoặc lớn hơn 3.",
+            storyTitle: "Trọng tài kiểm tra vé",
+            story: "Đấu trường chỉ nhận ba lựa chọn: 1, 2 hoặc 3. Nếu nhập số nằm ngoài khoảng ấy, trọng tài sẽ nhắc chọn lại.",
+            example: "<b>nguoi = 4</b> → chương trình cần in <b>Lựa chọn không hợp lệ</b>.",
+            lines: ["nguoi = 4", "if {0}:", '    print("Lựa chọn không hợp lệ")', "else:", '    print("Bắt đầu đấu!")'],
+            answers: ["nguoi < 1 or nguoi > 3"],
+            acceptedAnswers: [["nguoi < 1 or nguoi > 3", "nguoi > 3 or nguoi < 1"]],
+            hints: ["Giá trị không hợp lệ nếu thấp hơn 1 hoặc cao hơn 3.", "Dùng or kết hợp hai điều kiện."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "loops",
+        title: "Thung Lũng Vòng Lặp",
+        icon: "🔁",
+        theory: [
+          ["for và range", "for lặp qua một dãy; range() tạo dãy số, điểm kết thúc không được tính."],
+          ["Tích lũy", "Khởi tạo biến tổng rồi dùng += để cộng thêm giá trị qua mỗi lượt."],
+          ["while và break", "while lặp khi điều kiện còn đúng; break dừng vòng lặp khi cần."]
+        ],
+        syntax: 'for i in range(bat_dau, diem_dung):\n    # lặp qua từng giá trị\n\nwhile dieu_kien:\n    # lặp khi điều kiện đúng\n    if can_dung:\n        break',
+        tasks: [
+          {
+            title: "Bậc đá qua suối",
+            intro: "Điền điểm bắt đầu và điểm kết thúc để bước qua các số từ 1 đến 5.",
+            storyTitle: "Những bậc đá biết biến mất",
+            story: "Dòng suối chỉ hiện bậc đá mang số từ 1 đến 5. Bậc số 6 nằm bên kia bờ nên không được bước lên; nhớ rằng range không lấy điểm cuối.",
+            example: "Điền theo dạng <b>bắt đầu, điểm dừng</b>. range không lấy điểm dừng, nên dãy <b>1, 2, 3, 4, 5</b> dùng điểm dừng <b>6</b>.",
+            lines: ["for i in range({0}):", "    print(i)"],
+            answers: ["1, 6"],
+            acceptedAnswers: [["1, 6", "1,6"]],
+            hints: ["range nhận điểm bắt đầu và điểm dừng.", "Bắt đầu từ 1 và dừng ở 6 để số cuối được in là 5."],
+            slots: 1
+          },
+          {
+            title: "Gom năng lượng chẵn",
+            intro: "Chỉ cộng các số chẵn vào tổng năng lượng. Hoàn thiện điều kiện và phép cộng.",
+            storyTitle: "Đom đóm chỉ ăn số chẵn",
+            story: "Đom đóm phát sáng nhờ năng lượng từ các số chẵn. Nó bay qua từng số từ 1 đến 6, nhưng hiện chưa biết số nào nên được cộng vào bình.",
+            example: "<b>1 + 2 + 3 + 4 + 5 + 6</b> chỉ lấy số chẵn → tổng bằng <b>12</b>.",
+            lines: ["tong = 0", "for i in range(1, 7):", "    if {0}:", "        {1}", 'print("Năng lượng:", tong)'],
+            answers: ["i % 2 == 0", "tong += i"],
+            acceptedAnswers: [null, ["tong += i", "tong = tong + i"]],
+            hints: ["Số chẵn có số dư bằng 0 khi chia cho 2.", "Nếu điều kiện đúng, cộng i vào tong bằng toán tử +=."],
+            slots: 2
+          },
+          {
+            title: "Bữa tiệc pizza vô tận",
+            intro: "Ếch ăn từng miếng trong vòng lặp vô hạn. Điền điều kiện để break dừng vòng lặp khi hết pizza.",
+            storyTitle: "Một miếng nữa thôi!",
+            story: "Ếch Xanh tìm thấy chiếc pizza 3 miếng và cứ kêu “một miếng nữa thôi!”. Vòng lặp đã chạy mãi không nghỉ; sau miếng cuối, em cần giúp Ếch dùng break để dừng lại.",
+            example: "<b>mieng_pizza</b> giảm từ 3 về 0; khi hết bánh, break thoát khỏi while True.",
+            lines: ["mieng_pizza = 3", "while True:", '    print("Chóp!")', "    mieng_pizza -= 1", "    if {0}:", "        break", 'print("Hết pizza!")'],
+            answers: ["mieng_pizza == 0"],
+            acceptedAnswers: [["mieng_pizza == 0", "mieng_pizza <= 0"]],
+            hints: ["while True không tự dừng; cần kiểm tra điều kiện rồi dùng break.", "Dừng vòng lặp khi số miếng pizza bằng 0."],
+            slots: 1
+          },
+          {
+            title: "Tính tổng ba bước",
+            intro: "Dùng range để cộng các số 1, 2 và 3 vào tổng.",
+            storyTitle: "Ba bậc đá phát sáng",
+            story: "Mỗi bậc đá cho Ếch một điểm năng lượng bằng số ghi trên bậc. Hãy chọn điểm dừng phù hợp để lấy đủ các số 1, 2 và 3.",
+            example: "Vòng lặp cần cộng <b>1 + 2 + 3</b>, nên tổng cuối cùng là <b>6</b>.",
+            lines: ["tong = 0", "for i in range({0}):", "    tong += i", 'print("Tổng:", tong)'],
+            answers: ["1, 4"],
+            acceptedAnswers: [["1, 4", "1,4"]],
+            hints: ["range không lấy điểm dừng.", "Bắt đầu ở 1 và dừng ở 4 để vòng lặp đi qua 1, 2, 3."],
+            slots: 1
+          },
+          {
+            title: "Đếm ngược trước cú nhảy",
+            intro: "Cho vòng lặp tiếp tục khi còn số lớn hơn 0.",
+            storyTitle: "Ếch chuẩn bị nhảy",
+            story: "Ếch đếm ngược từ 3 trước khi nhảy qua suối. Sau mỗi lượt, dem giảm đi 1; khi về 0 thì vòng lặp kết thúc.",
+            example: "<b>dem = 3</b> → in lần lượt <b>3, 2, 1</b> rồi dừng.",
+            lines: ["dem = 3", "while {0}:", "    print(dem)", "    dem -= 1"],
+            answers: ["dem > 0"],
+            hints: ["Chỉ tiếp tục đếm khi dem vẫn lớn hơn 0.", "Điền điều kiện dem > 0."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "lists",
+        title: "Đầm Lầy Danh Sách",
+        icon: "🪷",
+        theory: [
+          ["Danh sách", "Danh sách lưu nhiều giá trị; for có thể duyệt lần lượt từng phần tử."],
+          ["Cập nhật kết quả", "Biến tích lũy bắt đầu từ giá trị đầu tiên hoặc 0 rồi được cập nhật trong vòng lặp."],
+          ["Đếm phần tử", "Đặt biến đếm bằng 0; mỗi phần tử thỏa điều kiện thì tăng đếm thêm 1."]
+        ],
+        syntax: 'mang = [3, 8, 2]\nmang.append(5)\nfor so in mang:\n    print(so)\n\n# cập nhật biến đếm\ndem = 0\ndem += 1',
+        tasks: [
+          {
+            title: "Cất hạt vào giỏ",
+            intro: "Ếch đã duyệt qua từng hạt. Hãy thêm hạt hiện tại vào danh sách.",
+            storyTitle: "Chiếc giỏ của Rái Cá",
+            story: "Rái Cá đưa Ếch một chiếc giỏ trống. Từng hạt sen đi qua tay Ếch, và mỗi hạt cần được thêm vào danh sách để không bị thất lạc.",
+            example: "Trong vòng <b>for so in [3, 8, 2]</b>, mỗi lượt thêm giá trị so vào mang.",
+            lines: ["mang = []", "for so in [3, 8, 2]:", "    mang.append({0})", "print(mang)"],
+            answers: ["so"],
+            hints: ["append() thêm một giá trị vào cuối danh sách.", "Biến so đang giữ hạt hiện tại của vòng lặp."],
+            slots: 1
+          },
+          {
+            title: "Tìm viên ngọc lớn nhất",
+            intro: "So sánh mỗi viên ngọc với viên lớn nhất hiện tại rồi cập nhật nếu cần.",
+            storyTitle: "Viên ngọc đổi chủ",
+            story: "Rùa Cổ Đại cần tìm viên ngọc sáng nhất trong chiếc rương. Nếu viên đang xét lớn hơn viên lớn nhất hiện tại, hãy thay người giữ kỷ lục.",
+            example: "Danh sách là <b>[4, 9, 2]</b>; kết quả lớn nhất cần tìm là <b>9</b>.",
+            lines: ["lon_nhat = mang[0]", "for so in mang:", "    if {0}:", "        {1}", 'print("Lớn nhất:", lon_nhat)'],
+            answers: ["so > lon_nhat", "lon_nhat = so"],
+            acceptedAnswers: [["so > lon_nhat", "so >= lon_nhat"], ["lon_nhat = so"]],
+            hints: ["Hãy kiểm tra xem giá trị đang xét có vượt kỷ lục hiện tại không.", "Nếu so lớn hơn lon_nhat, gán so cho lon_nhat."],
+            slots: 2
+          },
+          {
+            title: "Đếm dấu chân của X",
+            intro: "Điền điều kiện và lệnh tăng biến đếm để tìm dấu chân X trong danh sách.",
+            storyTitle: "Dấu chân dẫn về nhà",
+            story: "Cuối đầm lầy, Ếch tìm thấy dấu chân của bạn X. Có vài dấu chân khác xen lẫn; đếm chính xác dấu chân trùng với X để biết bạn ấy đã đi qua đây bao nhiêu lần. Khi con số hiện ra, X chạy về trao lại dải màu cuối cùng cho Cầu Vồng.",
+            example: "<b>mang = [2, 5, 2, 7, 2]</b>, <b>x = 2</b> → X xuất hiện <b>3 lần</b>.",
+            lines: ["mang = [2, 5, 2, 7, 2]", "x = 2", "dem = 0", "for so in mang:", "    if {0}:", "        {1}", 'print("Số lần xuất hiện:", dem)'],
+            answers: ["so == x", "dem += 1"],
+            acceptedAnswers: [null, ["dem += 1", "dem = dem + 1"]],
+            hints: ["So sánh từng phần tử so với giá trị cần tìm x.", "Nếu bằng nhau, tăng dem thêm 1 bằng +=."],
+            slots: 2
+          },
+          {
+            title: "Lấy hạt ở giữa",
+            intro: "Dùng chỉ số để lấy phần tử thứ hai trong danh sách.",
+            storyTitle: "Chiếc lá đánh số từ không",
+            story: "Danh sách đánh số vị trí bắt đầu từ 0. Chiếc hạt thứ hai nằm ở chỉ số 1; hãy lấy đúng hạt sen đó.",
+            example: "<b>mang = [3, 8, 2]</b> → phần tử thứ hai là <b>8</b>.",
+            lines: ["mang = [3, 8, 2]", "hat_giua = mang[{0}]", 'print("Hạt ở giữa:", hat_giua)'],
+            answers: ["1"],
+            hints: ["Chỉ số đầu tiên của danh sách là 0.", "Phần tử thứ hai có chỉ số 1."],
+            slots: 1
+          },
+          {
+            title: "Tính tổng trong giỏ",
+            intro: "Cộng từng hạt sen vào biến tổng.",
+            storyTitle: "Chiếc giỏ đầy năng lượng",
+            story: "Ếch nhặt được các hạt có giá trị 2, 4 và 6. Hãy cộng từng hạt vào tong để biết tổng năng lượng.",
+            example: "Danh sách <b>[2, 4, 6]</b> có tổng bằng <b>12</b>.",
+            lines: ["tong = 0", "for so in [2, 4, 6]:", "    {0}", 'print("Tổng:", tong)'],
+            answers: ["tong += so"],
+            acceptedAnswers: [["tong += so", "tong = tong + so"]],
+            hints: ["Mỗi lượt, so chứa một hạt sen.", "Cộng so vào tong bằng toán tử +=."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "branches",
+        title: "Vườn Rẽ Nhánh",
+        icon: "🌷",
+        theory: [
+          ["if", "if kiểm tra điều kiện; khối lệnh bên dưới chỉ chạy khi điều kiện đúng."],
+          ["elif / else", "elif kiểm tra trường hợp tiếp theo; else chạy khi các điều kiện trước đều sai."],
+          ["Thứ tự điều kiện", "Đặt điều kiện cụ thể hoặc ngưỡng cao trước để nhánh không bị che khuất."]
+        ],
+        syntax: 'if dieu_kien_1:\n    # nhánh thứ nhất\nelif dieu_kien_2:\n    # nhánh thứ hai\nelse:\n    # nhánh mặc định',
+        tasks: [
+          {
+            title: "Chọn vé vào hội",
+            intro: "Điền điều kiện để chọn vé người lớn từ 18 tuổi trở lên.",
+            storyTitle: "Hội hoa sen mở cổng",
+            story: "Vườn Rẽ Nhánh tổ chức hội hoa. Người từ 18 tuổi được nhận vé người lớn; các bạn nhỏ nhận vé thiếu nhi. Người bán vé đang chờ một điều kiện thật chính xác.",
+            example: "<b>tuoi = 15</b> → chương trình cần in <b>Vé thiếu nhi</b>.",
+            lines: ["tuoi = 15", "if {0}:", '    print("Vé người lớn")', "else:", '    print("Vé thiếu nhi")'],
+            answers: ["tuoi >= 18"],
+            hints: ["Người lớn bắt đầu từ 18 tuổi trở lên.", "Dùng phép so sánh >= giữa tuoi và 18."],
+            slots: 1
+          },
+          {
+            title: "Xếp loại điểm",
+            intro: "Hoàn thiện ngưỡng điểm Giỏi; nhánh Khá và cần cố gắng đã được viết sẵn.",
+            storyTitle: "Bảng điểm của cú Mèo",
+            story: "Cú Mèo đem bảng điểm đến hội. Từ 8 điểm trở lên được xếp loại Giỏi; từ 6.5 điểm được xếp loại Khá; thấp hơn thì cần luyện tập thêm.",
+            example: "<b>diem = 7.5</b> → kết quả là <b>Khá</b>; ngưỡng Giỏi là <b>8</b>.",
+            lines: ["diem = 7.5", "if {0}:", '    print("Giỏi")', "elif diem >= 6.5:", '    print("Khá")', "else:", '    print("Cần cố gắng")'],
+            answers: ["diem >= 8"],
+            hints: ["Nhánh Giỏi cần kiểm tra điểm đạt ngưỡng 8 trở lên.", "Điền phép so sánh diem >= 8."],
+            slots: 1
+          },
+          {
+            title: "Quà tặng cuối buổi",
+            intro: "Chỉ nhận quà khi mua ít nhất 3 ly và tổng tiền từ 100000 đồng trở lên.",
+            storyTitle: "Chiếc túi quà của Sóc Nâu",
+            story: "Sóc Nâu chuẩn bị túi quà cho khách mua nhiều trà sữa. Cần mua ít nhất 3 ly VÀ hóa đơn đạt 100000 đồng; thiếu một điều kiện thì chưa nhận được quà.",
+            example: "<b>so_ly = 3</b>, <b>tong_tien = 105000</b> → đủ điều kiện nhận quà.",
+            lines: ["so_ly = 3", "tong_tien = 105000", "if {0}:", '    print("Nhận quà!")', "else:", '    print("Hẹn lần sau!")'],
+            answers: ["so_ly >= 3 and tong_tien >= 100000"],
+            acceptedAnswers: [["so_ly >= 3 and tong_tien >= 100000", "tong_tien >= 100000 and so_ly >= 3"]],
+            hints: ["Cả số ly lẫn tổng tiền đều phải đạt mức tối thiểu.", "Dùng and nối so_ly >= 3 với tong_tien >= 100000."],
+            slots: 1
+          },
+          {
+            title: "Ba mức khen thưởng",
+            intro: "Thêm nhánh elif để nhận biết điểm Khá từ 7 trở lên.",
+            storyTitle: "Lễ trao huy hiệu",
+            story: "Vườn hoa trao huy hiệu Vàng từ 9 điểm, huy hiệu Bạc từ 7 điểm; thấp hơn thì tiếp tục luyện tập.",
+            example: "<b>diem = 8</b> → chương trình cần in <b>Huy hiệu Bạc</b>.",
+            lines: ["diem = 8", "if diem >= 9:", '    print("Huy hiệu Vàng")', "elif {0}:", '    print("Huy hiệu Bạc")', "else:", '    print("Luyện tập thêm")'],
+            answers: ["diem >= 7"],
+            hints: ["Nhánh elif kiểm tra mức điểm tiếp theo sau huy hiệu Vàng.", "Dùng điều kiện diem >= 7."],
+            slots: 1
+          },
+          {
+            title: "Cảnh báo điểm thấp",
+            intro: "Nhắc luyện tập nếu điểm nhỏ hơn 5.",
+            storyTitle: "Lời nhắn của Cú Mèo",
+            story: "Cú Mèo gửi lời nhắc thân thiện cho bạn nào có điểm dưới 5. Từ 5 điểm trở lên, bạn ấy đã đạt mục tiêu của chặng này.",
+            example: "<b>diem = 4</b> → chương trình cần in <b>Cùng luyện thêm nhé!</b>.",
+            lines: ["diem = 4", "if {0}:", '    print("Cùng luyện thêm nhé!")', "else:", '    print("Em làm tốt lắm!")'],
+            answers: ["diem < 5"],
+            hints: ["Điểm thấp hơn 5 mới cần nhắc luyện tập.", "Dùng toán tử < để so sánh diem với 5."],
+            slots: 1
+          }
+        ]
+      },
+      {
+        id: "while",
+        title: "Dòng Suối while",
+        icon: "💧",
+        theory: [
+          ["Cấu trúc while", "while lặp lại khối lệnh khi điều kiện còn đúng; cần cập nhật biến để vòng lặp có thể kết thúc."],
+          ["Thụt lề", "Các lệnh thuộc vòng lặp phải thụt vào bên dưới dòng while."],
+          ["Dừng vòng lặp", "break thoát khỏi vòng lặp ngay lập tức; while True thường cần break để dừng."]
+        ],
+        syntax: 'while dieu_kien:\n    # lệnh được lặp lại\n    cap_nhat_bien()\n\nwhile True:\n    if dieu_kien_dung:\n        break',
+        tasks: [
+          {
+            title: "Đếm bước qua suối",
+            intro: "Điền điều kiện để in các số từ 1 đến 5, rồi dừng vòng lặp.",
+            storyTitle: "Năm bước chân của Ếch",
+            story: "Ếch Xanh cần đếm đủ năm bước để qua suối. Sau mỗi bước, biến buoc tăng thêm 1; nếu điều kiện không dừng đúng lúc, Ếch sẽ đi xa mãi.",
+            example: "Bắt đầu <b>buoc = 1</b>, in đến <b>5</b> rồi dừng.",
+            lines: ["buoc = 1", "while {0}:", "    print(buoc)", "    buoc += 1"],
+            answers: ["buoc <= 5"],
+            hints: ["Vòng lặp cần chạy khi buoc vẫn còn trong khoảng 1 đến 5.", "Dùng điều kiện buoc <= 5."],
+            slots: 1
+          },
+          {
+            title: "Mật khẩu của Rùa",
+            intro: "Cho nhập lại mật khẩu khi câu trả lời chưa đúng.",
+            storyTitle: "Rùa Gác Cổng hay quên",
+            story: "Rùa Gác Cổng quên mật khẩu nên cứ hỏi lại. Cửa chỉ mở khi người chơi nhập đúng chuỗi echxanh; hãy cho vòng while lặp khi mật khẩu còn sai.",
+            example: '<b>mat_khau_dung = "echxanh"</b>; nhập đúng thì thoát vòng lặp.',
+            lines: ['mat_khau_dung = "echxanh"', 'mat_khau = ""', "while {0}:", '    mat_khau = input("Mật khẩu: ")', 'print("Cửa mở!")'],
+            answers: ["mat_khau != mat_khau_dung"],
+            hints: ["Lặp lại khi mật khẩu hiện tại khác mật khẩu đúng.", "Dùng toán tử != giữa mat_khau và mat_khau_dung."],
+            slots: 1
+          },
+          {
+            title: "Dừng khi gặp số 0",
+            intro: "Điền điều kiện để break dừng nhập số khi người chơi nhập 0.",
+            storyTitle: "Con suối không đáy",
+            story: "Những con số chảy vào suối mãi không ngừng. Ếch quy ước số 0 là tín hiệu kết thúc; khi gặp nó, dùng break để rời vòng lặp ngay.",
+            example: "Nếu <b>so = 0</b> thì dừng; các số khác tiếp tục được cộng vào tong.",
+            lines: ["tong = 0", "while True:", '    so = int(input("Nhập số (0 để dừng): "))', "    if {0}:", "        break", "    tong += so", 'print("Tổng:", tong)'],
+            answers: ["so == 0"],
+            hints: ["0 là tín hiệu dừng, các giá trị khác thì tiếp tục cộng.", "Điều kiện của if cần kiểm tra so bằng 0."],
+            slots: 1
+          },
+          {
+            title: "Đếm ngược giọt nước",
+            intro: "Lặp khi vẫn còn nhiều hơn một giọt nước.",
+            storyTitle: "Giọt nước cuối cùng",
+            story: "Suối có 4 giọt nước phép thuật. Sau mỗi lượt, số giọt giảm một; khi hết giọt thì vòng lặp dừng.",
+            example: "<b>giot = 4</b> → vòng lặp chạy với các giá trị <b>4, 3, 2, 1</b>.",
+            lines: ["giot = 4", "while {0}:", '    print("Còn", giot)', "    giot -= 1"],
+            answers: ["giot > 0"],
+            hints: ["Vòng lặp tiếp tục khi vẫn còn ít nhất một giọt.", "Dùng điều kiện giot > 0."],
+            slots: 1
+          },
+          {
+            title: "Chờ đúng tín hiệu",
+            intro: "Tiếp tục lặp khi đèn chưa chuyển sang màu xanh.",
+            storyTitle: "Đèn xanh bên kia suối",
+            story: "Ếch chỉ được nhảy qua khi đèn xanh bật sáng. Hãy dùng while để chờ trong lúc den_xanh vẫn là False.",
+            example: "<b>den_xanh = False</b> → vòng lặp còn chờ; khi đổi thành True thì kết thúc.",
+            lines: ["den_xanh = False", "while {0}:", '    print("Đang chờ...")', "    den_xanh = True"],
+            answers: ["den_xanh == False"],
+            acceptedAnswers: [["den_xanh == False"]],
+            hints: ["Vòng lặp cần chạy khi den_xanh vẫn mang giá trị False.", "So sánh den_xanh với False bằng toán tử ==."],
+            slots: 1
+          }
+        ]
+      }
+    ];
+
+    const allTasks = chapters.flatMap((chapter, chapterIndex) =>
+      chapter.tasks.map((task, taskIndex) => ({ ...task, chapterIndex, taskIndex, chapter }))
+    );
+    const storageKey = "ech-python-v2-progress";
+    const playerStorageKey = "ech-python-v2-player";
+    const progressSchemaVersion = 3;
+    const createDefaultProgress = () => ({ schemaVersion: progressSchemaVersion, current: 0, completed: {}, totalScore: 0 });
+    const soundSupported = Boolean(window.AudioContext || window.webkitAudioContext);
+    let audioContext = null;
+    let soundEnabled = true;
+    let playerName = loadPlayerName();
+    let progress = loadProgress();
+    let hintIndex = 0;
+    let mistakes = 0;
+    let rewardAdded = false;
+
+    function showStorageError(message) {
+      for (const id of ["welcome-notice", "storage-notice"]) {
+        const notice = document.getElementById(id);
+        notice.textContent = message;
+        notice.classList.remove("hidden");
+      }
+    }
+
+    function loadPlayerName() {
+      try {
+        const saved = localStorage.getItem(playerStorageKey);
+        if (!saved) return "";
+        const profile = JSON.parse(saved);
+        if (!profile || typeof profile.name !== "string") {
+          throw new Error("Hồ sơ người học đã lưu không đúng định dạng.");
+        }
+        return profile.name.trim().slice(0, 60);
+      } catch (error) {
+        showStorageError(`Không đọc được hồ sơ đã lưu (${error.message}). Em vẫn có thể nhập tên và chơi tiếp.`);
+        return "";
+      }
+    }
+
+    function loadProgress() {
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) return createDefaultProgress();
+        const parsed = JSON.parse(saved);
+        if (!parsed || typeof parsed !== "object" || !Number.isInteger(parsed.current) || !parsed.completed || typeof parsed.completed !== "object") {
+          throw new Error("Dữ liệu tiến độ đã lưu không đúng định dạng.");
+        }
+        const isCurrentSchema = parsed.schemaVersion === progressSchemaVersion;
+        const completed = {};
+        if (isCurrentSchema) {
+          Object.assign(completed, parsed.completed);
+        } else {
+          for (const [key, score] of Object.entries(parsed.completed)) {
+            const match = key.match(/^task-(\d+)$/);
+            if (!match) continue;
+            const oldIndex = Number(match[1]);
+            if (oldIndex < 0 || oldIndex >= 21) continue;
+            const newIndex = Math.floor(oldIndex / 3) * 5 + oldIndex % 3;
+            completed[`task-${newIndex}`] = score;
+          }
+        }
+        const current = isCurrentSchema
+          ? parsed.current
+          : Math.floor(Math.min(parsed.current, 20) / 3) * 5 + Math.min(parsed.current, 20) % 3;
+        return {
+          schemaVersion: progressSchemaVersion,
+          current: Math.min(Math.max(current, 0), allTasks.length - 1),
+          completed,
+          totalScore: calculateTotalScore(completed)
+        };
+      } catch (error) {
+        showStorageError(`Không đọc được tiến độ đã lưu (${error.message}). Bản chơi vẫn hoạt động trong phiên này.`);
+        return createDefaultProgress();
+      }
+    }
+
+    function saveProgress() {
+      try {
+        progress.schemaVersion = progressSchemaVersion;
+        localStorage.setItem(storageKey, JSON.stringify(progress));
+      } catch (error) {
+        showStorageError(`Không lưu được điểm và tiến độ (${error.message}). Dữ liệu chỉ còn trong phiên này.`);
+      }
+    }
+
+    function savePlayerName(name) {
+      playerName = name;
+      try {
+        localStorage.setItem(playerStorageKey, JSON.stringify({ name: playerName }));
+      } catch (error) {
+        showStorageError(`Không lưu được họ tên (${error.message}). Em vẫn có thể chơi trong phiên này.`);
+      }
+    }
+
+    function renderWelcome() {
+      const input = document.getElementById("player-name");
+      input.value = playerName;
+      document.getElementById("welcome-title").textContent = playerName
+        ? `Chào mừng trở lại, ${playerName}!`
+        : "Ếch Xanh và Cầu Vồng Mất Tích";
+      document.getElementById("welcome-card-title").textContent = playerName
+        ? `Sẵn sàng tiếp tục, ${playerName}?`
+        : "Bạn tên gì, nhà thám hiểm?";
+      document.getElementById("welcome-card-copy").textContent = playerName
+        ? "Tên, điểm và tiến độ được lưu trên thiết bị này. Em có thể tiếp tục từ bài đang học hoặc đổi tên trước khi vào."
+        : "Nhập họ tên để lưu hồ sơ và bắt đầu chuyến phiêu lưu. Điểm cùng tiến độ sẽ được ghi nhớ trên thiết bị này.";
+      document.getElementById("start-button").textContent = playerName
+        ? "Tiếp tục hành trình →"
+        : "Bắt đầu hành trình →";
+      const completedCount = countCompletedTasks();
+      const summary = document.getElementById("welcome-progress");
+      summary.textContent = `⭐ ${progress.totalScore}/1000 điểm  ·  📝 ${formatGrade(progress.totalScore)}/10  ·  🐸 ${completedCount}/${allTasks.length} bài`;
+      summary.classList.toggle("show", Boolean(playerName) || completedCount > 0);
+    }
+
+    function startGame(name) {
+      savePlayerName(name);
+      document.getElementById("player-display").textContent = `👋 ${playerName}`;
+      document.getElementById("welcome-page").classList.add("hidden");
+      document.getElementById("game-shell").classList.remove("hidden");
+      renderSoundButton();
+      loadTask(progress.current);
+    }
+
+    function renderSoundButton() {
+      const button = document.getElementById("sound-toggle");
+      button.disabled = !soundSupported;
+      button.textContent = soundEnabled ? "🔊 Âm thanh" : "🔇 Tắt tiếng";
+      button.setAttribute("aria-pressed", String(soundEnabled));
+      button.title = soundSupported
+        ? (soundEnabled ? "Tắt âm thanh" : "Bật âm thanh")
+        : "Trình duyệt này không hỗ trợ âm thanh";
+    }
+
+    async function playFeedbackSound(isCorrect) {
+      if (!soundEnabled || !soundSupported) return;
+      try {
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        audioContext ??= new AudioContextConstructor();
+        if (audioContext.state === "suspended") await audioContext.resume();
+        const startAt = audioContext.currentTime;
+        const notes = isCorrect ? [659.25, 880] : [220];
+        notes.forEach((frequency, index) => {
+          const oscillator = audioContext.createOscillator();
+          const volume = audioContext.createGain();
+          const noteStart = startAt + index * 0.11;
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(frequency, noteStart);
+          volume.gain.setValueAtTime(0.0001, noteStart);
+          volume.gain.exponentialRampToValueAtTime(0.12, noteStart + 0.025);
+          volume.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.19);
+          oscillator.connect(volume);
+          volume.connect(audioContext.destination);
+          oscillator.start(noteStart);
+          oscillator.stop(noteStart + 0.2);
+        });
+      } catch (error) {
+        showStorageError(`Không phát được âm thanh (${error.message}). Có thể tắt âm thanh để tiếp tục.`);
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[character]);
+    }
+
+    function normalize(value) {
+      return value.trim().replace(/\s+/g, " ").replace(/\s*([=,:+*/%()<>&|!-])\s*/g, "$1");
+    }
+
+    function taskKey(index) {
+      return `task-${index}`;
+    }
+
+    function taskScore(index) {
+      const score = progress.completed[taskKey(index)];
+      return Number.isFinite(score) && score >= 0 ? Math.min(score, 100) : 0;
+    }
+
+    function isTaskCompleted(index) {
+      return Number.isFinite(progress.completed[taskKey(index)]);
+    }
+
+    function countCompletedTasks() {
+      return allTasks.reduce((count, _task, index) => count + Number(isTaskCompleted(index)), 0);
+    }
+
+    function calculateTotalScore(completed) {
+      const rawScore = allTasks.reduce((sum, _task, index) => {
+        const score = completed[taskKey(index)];
+        return sum + (Number.isFinite(score) && score >= 0 ? Math.min(score, 100) : 0);
+      }, 0);
+      return Math.min(1000, Math.round(rawScore * 10 / allTasks.length));
+    }
+
+    function formatGrade(score) {
+      return (score / 100).toFixed(1);
+    }
+
+    function renderStory(task, index) {
+      document.getElementById("story-label").textContent = index === 0 ? "Câu chuyện bắt đầu" : `Chuyện chặng ${index + 1}`;
+      document.getElementById("story-title").textContent = task.storyTitle;
+      document.getElementById("story-text").textContent = task.story;
+    }
+
+    function renderTheory(task) {
+      const card = document.getElementById("theory-card");
+      const isChapterStart = task.taskIndex === 0;
+      card.classList.toggle("hidden", !isChapterStart);
+      if (!isChapterStart) return;
+      document.getElementById("theory-title").textContent = `Nhắc nhanh: ${task.chapter.title}`;
+      document.getElementById("theory-content").innerHTML = task.chapter.theory.map(([title, detail]) =>
+        `<div class="theory-point"><strong>${escapeHtml(title)}</strong>${escapeHtml(detail)}</div>`
+      ).join("") + `<div class="syntax-panel"><span class="syntax-title">Ngữ pháp / cấu trúc mẫu</span><code>${escapeHtml(task.chapter.syntax)}</code></div>`;
+      document.getElementById("theory-content").classList.remove("hidden");
+      const toggle = document.getElementById("theory-toggle");
+      toggle.textContent = "Thu gọn ↑";
+      toggle.setAttribute("aria-expanded", "true");
+    }
+
+    function renderCode(task) {
+      const codeArea = document.getElementById("code-area");
+      codeArea.innerHTML = task.lines.map((line, lineIndex) => {
+        const rendered = line.split(/(\{\d+\})/g).map((part) => {
+          const slotMatch = part.match(/^\{(\d+)\}$/);
+          if (!slotMatch) return escapeHtml(part);
+          const slot = Number(slotMatch[1]);
+          return `<input class="blank-input" data-slot="${slot}" aria-label="Ô trống ${slot + 1}" placeholder="điền code..." autocomplete="off" spellcheck="false">`;
+        }).join("");
+        return `<div class="code-line">${String(lineIndex + 1).padStart(2, "0")}  ${rendered}</div>`;
+      }).join("");
+      codeArea.querySelectorAll("input").forEach((input) => {
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") checkAnswer();
+        });
+      });
+    }
+
+    function renderMap() {
+      const chapterList = document.getElementById("chapter-list");
+      const currentTask = allTasks[progress.current];
+      chapterList.innerHTML = chapters.map((chapter, chapterIndex) => {
+        const start = allTasks.findIndex((task) => task.chapterIndex === chapterIndex);
+        const completedCount = chapter.tasks.filter((_task, taskIndex) => isTaskCompleted(start + taskIndex)).length;
+        const current = chapterIndex === currentTask.chapterIndex;
+        const locked = start > progress.current;
+        return `<button type="button" class="chapter-button${current ? " active" : ""}${locked ? " locked" : ""}" data-chapter="${chapterIndex}" ${locked ? "disabled" : ""}>
+          <span class="chapter-icon">${chapter.icon}</span><span>${escapeHtml(chapter.title)}</span><span class="chapter-progress">${completedCount}/${chapter.tasks.length}</span>
+        </button>`;
+      }).join("");
+      chapterList.querySelectorAll(".chapter-button:not(:disabled)").forEach((button) => {
+        button.addEventListener("click", () => {
+          const chapterIndex = Number(button.dataset.chapter);
+          const firstIndex = allTasks.findIndex((task) => task.chapterIndex === chapterIndex);
+          const availableIndex = Math.min(progress.current, firstIndex + chapters[chapterIndex].tasks.length - 1);
+          loadTask(availableIndex);
+        });
+      });
+
+      const path = document.getElementById("lily-path");
+      const columns = 4;
+      const rowHeight = 32;
+      const positions = allTasks.map((_task, index) => {
+        const row = Math.floor(index / columns);
+        const withinRow = index % columns;
+        const column = row % 2 === 0 ? withinRow : columns - 1 - withinRow;
+        return { x: 5 + column * 30, y: 12 + row * rowHeight, row };
+      });
+      const points = positions.map(({ x, y }) => `${x},${y}`).join(" ");
+      path.innerHTML = `<svg class="path-line" viewBox="0 0 100 300" preserveAspectRatio="none" aria-hidden="true"><polyline points="${points}" fill="none" stroke="#87b897" stroke-width="1.5" stroke-dasharray="2 2" stroke-linecap="round" stroke-linejoin="round"></polyline></svg>` +
+        positions.map(({ x, row }, index) => {
+          const chapterStart = index === 0 || allTasks[index - 1].chapterIndex !== allTasks[index].chapterIndex;
+          const classes = ["lily-pad"];
+          if (isTaskCompleted(index)) classes.push("done");
+          if (index === currentTaskIndex()) classes.push("current");
+          if (chapterStart) classes.push("chapter-start");
+          return `<span class="${classes.join(" ")}" style="left:calc(${x}% - 13.5px);top:${row * rowHeight}px" title="${escapeHtml(allTasks[index].title)}">${index + 1}</span>`;
+        }).join("");
+
+      const frog = document.getElementById("frog");
+      const frogIndex = Math.max(0, Math.min(currentTaskIndex(), positions.length - 1));
+      const frogPosition = positions[frogIndex];
+      frog.style.left = `calc(${frogPosition.x}% - 11px)`;
+      frog.style.top = `${frogPosition.y - 5}px`;
+      frog.classList.remove("hop");
+      window.setTimeout(() => {
+        frog.classList.add("hop");
+        window.setTimeout(() => frog.classList.remove("hop"), 600);
+      }, 60);
+    }
+
+    function celebrateMap() {
+      const map = document.querySelector(".map");
+      map.classList.remove("celebrate");
+      void map.offsetWidth;
+      map.classList.add("celebrate");
+      window.setTimeout(() => map.classList.remove("celebrate"), 500);
+      const sparkles = ["✨", "🌟", "💚", "🌸", "✨", "⭐", "🍀"];
+      sparkles.forEach((symbol, index) => {
+        const sparkle = document.createElement("span");
+        sparkle.className = "map-sparkle";
+        sparkle.setAttribute("aria-hidden", "true");
+        sparkle.textContent = symbol;
+        sparkle.style.left = `${14 + Math.random() * 72}%`;
+        sparkle.style.top = `${35 + Math.random() * 50}%`;
+        sparkle.style.setProperty("--drift", `${Math.round(Math.random() * 46 - 23)}px`);
+        sparkle.style.animationDelay = `${index * 35}ms`;
+        sparkle.addEventListener("animationend", () => sparkle.remove(), { once: true });
+        map.append(sparkle);
+      });
+    }
+
+    function currentTaskIndex() {
+      const nextIncomplete = allTasks.findIndex((_task, index) => !isTaskCompleted(index));
+      return nextIncomplete === -1 ? allTasks.length - 1 : nextIncomplete;
+    }
+
+    function renderProgress() {
+      const count = countCompletedTasks();
+      document.getElementById("score").textContent = progress.totalScore;
+      document.getElementById("grade").textContent = formatGrade(progress.totalScore);
+      document.getElementById("progress-label").textContent = `${count} / ${allTasks.length} bài`;
+      document.getElementById("progress-fill").style.width = `${count / allTasks.length * 100}%`;
+      document.getElementById("finish-card").classList.toggle("show", count === allTasks.length && progress.current === allTasks.length - 1);
+      document.getElementById("final-score").textContent = `Tổng điểm: ${progress.totalScore}/1000 · Điểm quy đổi: ${formatGrade(progress.totalScore)}/10`;
+    }
+
+    function loadTask(index) {
+      progress.current = index;
+      saveProgress();
+      const task = allTasks[index];
+      mistakes = 0;
+      hintIndex = 0;
+      rewardAdded = isTaskCompleted(index);
+      document.getElementById("breadcrumb-chapter").textContent = task.chapter.title;
+      document.getElementById("breadcrumb-task").textContent = `Thử thách ${task.taskIndex + 1}`;
+      document.getElementById("page-title").textContent = `${task.chapter.icon} ${task.chapter.title}`;
+      document.getElementById("page-subtitle").textContent = "Mỗi bài học là một chặng đường. Mỗi mảnh code giúp câu chuyện tiến thêm một bước.";
+      document.getElementById("level-pill").textContent = `Chặng ${index + 1} / ${allTasks.length}`;
+      renderStory(task, index);
+      renderTheory(task);
+      document.getElementById("challenge-title").textContent = task.title;
+      document.getElementById("challenge-intro").textContent = task.intro;
+      document.getElementById("task-tag").textContent = `${task.slots} ô cần điền`;
+      document.getElementById("example-text").innerHTML = task.example;
+      renderCode(task);
+      document.querySelector(".editor").classList.remove("shake", "solved");
+      document.getElementById("hint-box").classList.add("hidden");
+      document.getElementById("hint-box").textContent = "";
+      document.getElementById("hint-count").textContent = "";
+      const feedback = document.getElementById("feedback");
+      feedback.className = "feedback";
+      feedback.textContent = "";
+      document.getElementById("hint-button").disabled = false;
+      document.getElementById("check-button").style.display = "inline-block";
+      document.getElementById("next-button").classList.remove("show");
+      document.getElementById("back-button").disabled = index === 0;
+      if (rewardAdded) {
+        codeAreaInputs().forEach((input, slot) => {
+          input.value = task.answers[slot];
+        });
+        feedback.className = "feedback show success";
+        feedback.textContent = "Bài này đã hoàn thành và điểm đã được lưu. Em có thể xem lại đáp án rồi tiếp tục hành trình.";
+        document.getElementById("check-button").style.display = "none";
+        if (index < allTasks.length - 1) document.getElementById("next-button").classList.add("show");
+      }
+      renderMap();
+      renderProgress();
+    }
+
+    function codeAreaInputs() {
+      return [...document.getElementById("code-area").querySelectorAll("input")];
+    }
+
+    function isCorrectAnswer(task, value, index) {
+      if (task.answerValidator === "quoted-prompt") {
+        return /^(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')$/.test(value.trim());
+      }
+      if (task.answerValidator === "input-call") {
+        return /^input\s*\(\s*(?:(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\s*)?\)$/.test(value.trim());
+      }
+      const acceptedAnswers = task.acceptedAnswers?.[index]?.filter(Boolean) ?? [task.answers[index]];
+      return acceptedAnswers.some((answer) => normalize(value) === normalize(answer));
+    }
+
+    function checkAnswer() {
+      const task = allTasks[progress.current];
+      const fields = codeAreaInputs();
+      const correct = fields.length === task.answers.length &&
+        fields.every((field, index) => isCorrectAnswer(task, field.value, index));
+      const feedback = document.getElementById("feedback");
+      feedback.className = `feedback show ${correct ? "success" : "try-again"}`;
+      if (!correct) {
+        mistakes += 1;
+        const editor = document.querySelector(".editor");
+        editor.classList.remove("shake");
+        void editor.offsetWidth;
+        editor.classList.add("shake");
+        void playFeedbackSound(false);
+        if (fields.some((field) => !field.value.trim())) {
+          feedback.textContent = "Còn ô trống rồi! Thử điền từng mảnh một nhé — sai thì mình sửa tiếp. 🐸";
+        } else if (task.answerValidator === "quoted-prompt") {
+          feedback.textContent = 'Ô này cần là một chuỗi đặt trong dấu nháy, ví dụ "Hãy nhập số nguyên: ". Em có thể tự viết lời nhắc khác.';
+        } else {
+          feedback.textContent = "Chưa khớp. Hãy kiểm tra lại tên biến, toán tử và dấu câu. Em có thể mở gợi ý!";
+        }
+        return;
+      }
+
+      if (!rewardAdded) {
+        const scoreBefore = progress.totalScore;
+        const hintsUsed = hintIndex;
+        progress.completed[taskKey(progress.current)] = Math.max(40, 100 - mistakes * 15 - hintsUsed * 10);
+        progress.totalScore = calculateTotalScore(progress.completed);
+        const earned = progress.totalScore - scoreBefore;
+        rewardAdded = true;
+        saveProgress();
+        renderMap();
+        renderProgress();
+        const editor = document.querySelector(".editor");
+        editor.classList.add("solved");
+        celebrateMap();
+        feedback.textContent = `Chính xác! Ếch Xanh nhảy sang lá sen tiếp theo. Em nhận ${earned} điểm hành trình${hintIndex || mistakes ? "." : " — tuyệt vời, hoàn thành không cần gợi ý!"} 🌟`;
+        void playFeedbackSound(true);
+      } else {
+        feedback.textContent = "Bài này đã hoàn thành trước đó nên điểm không cộng lặp lại. 🌟";
+        void playFeedbackSound(true);
+      }
+      document.getElementById("check-button").style.display = "none";
+      if (progress.current < allTasks.length - 1) {
+        document.getElementById("next-button").classList.add("show");
+      } else {
+        document.getElementById("finish-card").classList.add("show");
+      }
+    }
+
+    document.getElementById("welcome-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("player-name");
+      const name = input.value.trim().replace(/\s+/g, " ");
+      if (!name) {
+        input.setCustomValidity("Nhập họ tên trước khi bắt đầu nhé.");
+        input.reportValidity();
+        return;
+      }
+      input.setCustomValidity("");
+      startGame(name.slice(0, 60));
+    });
+    document.getElementById("player-name").addEventListener("input", (event) => {
+      event.currentTarget.setCustomValidity("");
+    });
+    document.getElementById("home-button").addEventListener("click", () => {
+      document.getElementById("game-shell").classList.add("hidden");
+      document.getElementById("welcome-page").classList.remove("hidden");
+      renderWelcome();
+    });
+    document.getElementById("sound-toggle").addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      renderSoundButton();
+      if (soundEnabled) void playFeedbackSound(true);
+    });
+    document.getElementById("check-button").addEventListener("click", checkAnswer);
+    document.getElementById("next-button").addEventListener("click", () => {
+      if (progress.current < allTasks.length - 1) loadTask(progress.current + 1);
+    });
+    document.getElementById("back-button").addEventListener("click", () => {
+      if (progress.current > 0) loadTask(progress.current - 1);
+    });
+    document.getElementById("hint-button").addEventListener("click", () => {
+      const task = allTasks[progress.current];
+      const box = document.getElementById("hint-box");
+      const hint = task.hints[Math.min(hintIndex, task.hints.length - 1)];
+      box.textContent = `Gợi ý ${Math.min(hintIndex + 1, task.hints.length)}: ${hint}`;
+      box.classList.remove("hidden");
+      hintIndex = Math.min(hintIndex + 1, task.hints.length);
+      document.getElementById("hint-count").textContent = `(${hintIndex}/${task.hints.length})`;
+    });
+    document.getElementById("theory-toggle").addEventListener("click", (event) => {
+      const content = document.getElementById("theory-content");
+      const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+      content.classList.toggle("hidden", expanded);
+      event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+      event.currentTarget.textContent = expanded ? "Xem lại ↓" : "Thu gọn ↑";
+    });
+    document.getElementById("reset-button").addEventListener("click", () => {
+      if (!window.confirm("Chơi lại từ đầu? Điểm và tiến độ đã lưu sẽ bị xóa.")) return;
+      progress = createDefaultProgress();
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (error) {
+        const notice = document.getElementById("storage-notice");
+        notice.textContent = `Không xóa được tiến độ đã lưu (${error.message}).`;
+        notice.classList.remove("hidden");
+      }
+      loadTask(0);
+    });
+
+    renderWelcome();
+  </script>
+</body>
+</html>
